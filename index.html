@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>烏野國文特訓所</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ===========================
+   排球少年主題色 CSS 變數
+   =========================== */
+:root {
+  /* 烏野配色 */
+  --karasuno-black: #2D2D2D;
+  --karasuno-orange: #FF7F00;
+  --karasuno-orange-dark: #CC6600;
+  --karasuno-orange-light: #FFF0DC;
+  --volleyball-white: #F8F8F8;
+  --court-blue: #005A9E;
+  --court-blue-dark: #004070;
+  --court-blue-light: #DCF0FF;
+
+  /* 系統對應 */
+  --bg: #F0F2F5;
+  --surface: #FFFFFF;
+  --surface-2: #F4F6F9;
+  --border: #E2E6EA;
+  --primary: var(--court-blue);
+  --primary-light: var(--court-blue-light);
+  --primary-dark: var(--court-blue-dark);
+  --accent: var(--karasuno-orange);
+  --accent-light: var(--karasuno-orange-light);
+  --accent-dark: var(--karasuno-orange-dark);
+  --text: var(--karasuno-black);
+  --text-2: #555;
+  --text-3: #999;
+  --success: #1A8C4E;
+  --success-light: #D4F4E2;
+  --danger: #C0392B;
+  --danger-light: #FCDEDE;
+
+  /* Pool 專屬色 — 烏野黑/橘/藍 */
+  --daily: var(--karasuno-orange);
+  --weekly: var(--court-blue);
+  --monthly: #1A8C4E;
+
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.10);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.07);
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+
+/* ===== 深色模式（烏野黑夜版） ===== */
+[data-theme="dark"] {
+  --bg: #1A1A1A;
+  --surface: #2D2D2D;
+  --surface-2: #3A3A3A;
+  --border: #4A4A4A;
+  --primary: #4AABF0;
+  --primary-light: #003566;
+  --primary-dark: #7FC8FF;
+  --text: #F8F8F8;
+  --text-2: #BBBBBB;
+  --text-3: #777777;
+  --accent-light: #3D2000;
+  --success-light: #0A2E1C;
+  --danger-light: #2E0A0A;
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+button { font-family: var(--font); cursor: pointer; border: none; outline: none; }
+input, select, textarea { font-family: var(--font); }
+
+/* ===== Layout ===== */
+#app { max-width: 1100px; margin: 0 auto; padding: 14px; }
+
+/* ===========================
+   HEADER — 烏野黑底橘紋
+   =========================== */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--karasuno-black);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  min-height: 58px;
+  position: relative;
+  overflow: hidden;
+}
+/* 橘色斜條紋裝飾 */
+.app-header::before {
+  content: '';
+  position: absolute;
+  right: -30px; top: -10px;
+  width: 120px; height: 120px;
+  background: var(--karasuno-orange);
+  opacity: 0.12;
+  transform: rotate(20deg) skewX(-10deg);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.app-header::after {
+  content: '';
+  position: absolute;
+  right: 50px; top: -20px;
+  width: 60px; height: 120px;
+  background: var(--karasuno-orange);
+  opacity: 0.07;
+  transform: rotate(20deg) skewX(-10deg);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.app-logo {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--volleyball-white);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.app-logo .logo-ball {
+  display: inline-block;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--karasuno-orange);
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(255,127,0,0.3);
+}
+.app-logo .logo-ball::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  border-top-color: transparent;
+  transform: rotate(40deg);
+}
+.app-logo .logo-title { color: var(--volleyball-white); }
+.app-logo .logo-accent { color: var(--karasuno-orange); }
+
+.header-actions { display: flex; gap: 8px; align-items: center; position: relative; z-index: 1; }
+.btn-icon {
+  background: rgba(255,255,255,0.1);
+  color: var(--volleyball-white);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  transition: background 0.2s;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.btn-icon:hover { background: var(--karasuno-orange); }
+
+/* ===========================
+   儲存失效警告橫幅
+   =========================== */
+.storage-warning-banner {
+  display: none;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--danger-light);
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.storage-warning-banner.show { display: flex; }
+.storage-warning-icon { font-size: 1.8rem; flex-shrink: 0; line-height: 1; }
+.storage-warning-text { flex: 1; font-size: 0.88rem; color: var(--text); }
+.storage-warning-text strong { display: block; color: var(--danger); font-size: 1rem; margin-bottom: 6px; }
+.storage-warning-text p { margin-top: 6px; line-height: 1.5; color: var(--text-2); }
+.storage-warning-tip { color: var(--karasuno-orange) !important; font-weight: 700; }
+.storage-warning-close {
+  background: transparent;
+  color: var(--text-2);
+  font-size: 1.1rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.storage-warning-close:hover { background: rgba(0,0,0,0.08); }
+
+/* ===== Pool Badges ===== */
+.pool-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.pool-badge.daily  { background: var(--karasuno-orange-light); color: var(--karasuno-orange-dark); border: 1px solid var(--karasuno-orange); }
+.pool-badge.weekly { background: var(--court-blue-light);      color: var(--court-blue-dark);      border: 1px solid var(--court-blue); }
+.pool-badge.monthly{ background: #D4F4E2;                      color: #0A5E30;                      border: 1px solid #1A8C4E; }
+[data-theme="dark"] .pool-badge.daily  { background: #3D2000; color: #FFAA44; border-color: #FF7F00; }
+[data-theme="dark"] .pool-badge.weekly { background: #003566; color: #7FC8FF; border-color: #4AABF0; }
+[data-theme="dark"] .pool-badge.monthly{ background: #0A2E1C; color: #6EE7A8; border-color: #1A8C4E; }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+/* ===========================
+   BUTTONS
+   =========================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 22px;
+  border-radius: 99px;
+  font-size: 1rem;
+  font-weight: 800;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn:active { transform: scale(0.96); }
+
+/* 橘色主按鈕 */
+.btn-primary {
+  background: var(--karasuno-orange);
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(255,127,0,0.35);
+}
+.btn-primary:hover {
+  background: var(--karasuno-orange-dark);
+  box-shadow: 0 4px 18px rgba(255,127,0,0.5);
+}
+/* 藍色次按鈕 */
+.btn-blue {
+  background: var(--court-blue);
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(0,90,158,0.3);
+}
+.btn-blue:hover { background: var(--court-blue-dark); }
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--accent-light); color: var(--accent-dark); border-color: var(--accent); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #146B3A; }
+.btn-danger  { background: var(--danger);  color: #fff; }
+.btn-danger:hover  { background: #962D22; }
+.btn-lg { font-size: 1.15rem; padding: 13px 30px; }
+.btn-sm { font-size: 0.83rem; padding: 6px 14px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ===== Pages ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===========================
+   HOME PAGE
+   =========================== */
+.home-hero {
+  background: var(--karasuno-black);
+  border-radius: var(--radius);
+  padding: 28px 24px 22px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+/* 橘色斜塊裝飾 */
+.home-hero::before {
+  content: '';
+  position: absolute;
+  right: -40px; bottom: -40px;
+  width: 200px; height: 200px;
+  background: var(--karasuno-orange);
+  opacity: 0.15;
+  transform: rotate(25deg);
+  border-radius: 24px;
+}
+.home-hero::after {
+  content: '';
+  position: absolute;
+  right: 80px; bottom: -60px;
+  width: 120px; height: 200px;
+  background: var(--court-blue);
+  opacity: 0.10;
+  transform: rotate(25deg);
+  border-radius: 24px;
+}
+.home-hero-inner { position: relative; z-index: 1; }
+.home-hero-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--karasuno-orange);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.home-hero h1 {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: var(--volleyball-white);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.home-hero p {
+  color: rgba(248,248,248,0.65);
+  font-size: 0.92rem;
+  margin-bottom: 16px;
+}
+
+/* Pool Summary */
+.pool-summary {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.pool-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border-radius: 99px;
+  padding: 7px 16px;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+}
+.pool-chip .dot { width: 9px; height: 9px; border-radius: 50%; }
+.pool-chip .dot.daily   { background: var(--daily); }
+.pool-chip .dot.weekly  { background: var(--weekly); }
+.pool-chip .dot.monthly { background: var(--monthly); }
+
+/* Home Tiles */
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.home-tile {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 24px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+.home-tile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--tile-accent, var(--karasuno-orange));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.home-tile:nth-child(1) { --tile-accent: var(--karasuno-orange); }
+.home-tile:nth-child(2) { --tile-accent: var(--court-blue); }
+.home-tile:nth-child(3) { --tile-accent: var(--monthly); }
+.home-tile:nth-child(4) { --tile-accent: #8B5CF6; }
+.home-tile:hover { box-shadow: var(--shadow); transform: translateY(-3px); border-color: var(--accent); }
+.home-tile-icon { font-size: 2.2rem; margin-bottom: 10px; }
+.home-tile-title { font-size: 1.1rem; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+.home-tile-desc  { font-size: 0.82rem; color: var(--text-2); }
+.home-tile-quote {
+  font-size: 0.75rem;
+  color: var(--karasuno-orange);
+  font-weight: 700;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ===========================
+   QUIZ PAGE
+   =========================== */
+.quiz-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+}
+.quiz-progress-bar-wrap {
+  flex: 1;
+  background: var(--surface-2);
+  border-radius: 99px;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.quiz-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--karasuno-orange) 0%, var(--court-blue) 100%);
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(.4,0,.2,1);
+}
+.quiz-counter {
+  font-size: 0.88rem; font-weight: 800;
+  color: var(--text-2);
+  white-space: nowrap;
+  min-width: 52px;
+  text-align: right;
+}
+
+.quiz-card-big {
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 40px 28px 32px;
+  text-align: center;
+  margin-bottom: 18px;
+  min-height: 280px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-top: 5px solid var(--karasuno-orange);
+  position: relative;
+}
+/* 球場線條裝飾 */
+.quiz-card-big::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--court-blue), transparent);
+  opacity: 0.3;
+}
+.quiz-pool-tag { margin-bottom: 14px; }
+.quiz-word-label {
+  font-size: 0.82rem;
+  color: var(--text-3);
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+.quiz-bopomofo {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--karasuno-black);
+  letter-spacing: 8px;
+  margin-bottom: 24px;
+  line-height: 1.3;
+}
+[data-theme="dark"] .quiz-bopomofo { color: var(--volleyball-white); }
+.quiz-play-btn {
+  background: var(--karasuno-orange);
+  color: #fff;
+  border-radius: 50%;
+  width: 56px; height: 56px;
+  font-size: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(255,127,0,0.4);
+  margin-bottom: 8px;
+}
+.quiz-play-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(255,127,0,0.6); }
+.quiz-play-btn:active { transform: scale(0.95); }
+.quiz-hint {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.quiz-shoyo-quote {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: var(--court-blue);
+  font-weight: 700;
+  font-style: italic;
+  opacity: 0.75;
+}
+.quiz-actions { display: flex; justify-content: center; gap: 12px; }
+
+/* ===========================
+   GRADING PAGE
+   =========================== */
+.grading-intro { text-align: center; margin-bottom: 20px; }
+.grading-intro h2 {
+  font-size: 1.5rem; font-weight: 900;
+  color: var(--karasuno-black); margin-bottom: 4px;
+}
+[data-theme="dark"] .grading-intro h2 { color: var(--volleyball-white); }
+.grading-intro p { color: var(--text-2); font-size: 0.9rem; }
+.grading-intro .hinata-line {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--karasuno-orange);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.grading-progress {
+  text-align: center;
+  color: var(--text-2);
+  font-size: 0.88rem;
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.grading-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.grading-item {
+  display: flex; align-items: center;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-sm);
+  gap: 12px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, background 0.15s;
+}
+.grading-item.correct { border-color: var(--success); background: var(--success-light); }
+.grading-item.wrong   { border-color: var(--danger);  background: var(--danger-light); }
+.grading-item-word     { font-size: 1.35rem; font-weight: 900; flex: 1; }
+.grading-item-bopomofo { font-size: 0.88rem; color: var(--text-2); flex: 1.2; }
+.grading-item-actions  { display: flex; gap: 6px; flex-shrink: 0; }
+.grading-item-graded   { font-size: 1.4rem; }
+.grading-submit-wrap   { text-align: center; margin-top: 8px; }
+
+/* ===========================
+   RESULTS PAGE
+   =========================== */
+.results-score-big {
+  text-align: center;
+  padding: 28px;
+  background: var(--karasuno-black);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.results-score-big::before {
+  content: '';
+  position: absolute;
+  left: -30px; top: -30px;
+  width: 160px; height: 160px;
+  background: var(--karasuno-orange);
+  opacity: 0.12;
+  border-radius: 50%;
+}
+.results-score-inner { position: relative; z-index: 1; }
+.results-score-num {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: var(--karasuno-orange);
+  line-height: 1;
+}
+.results-score-denom { font-size: 1.4rem; color: rgba(248,248,248,0.6); }
+.results-pct {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--volleyball-white);
+  margin-top: 6px;
+}
+.results-msg {
+  font-size: 1rem;
+  color: var(--karasuno-orange);
+  font-weight: 700;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.results-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.results-section h3 { font-size: 0.95rem; font-weight: 800; margin-bottom: 10px; }
+.results-word-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.results-word-chip {
+  background: var(--surface-2);
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+}
+
+.results-pool-stats {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px;
+}
+.results-pool-stat {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px 22px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  min-width: 90px;
+  border-top: 3px solid transparent;
+}
+.results-pool-stat.daily  { border-top-color: var(--daily); }
+.results-pool-stat.weekly { border-top-color: var(--weekly); }
+.results-pool-stat.monthly{ border-top-color: var(--monthly); }
+.results-pool-stat .num { font-size: 1.9rem; font-weight: 900; }
+.results-pool-stat.daily  .num { color: var(--daily); }
+.results-pool-stat.weekly .num { color: var(--weekly); }
+.results-pool-stat.monthly .num { color: var(--monthly); }
+.results-pool-stat .lbl { font-size: 0.78rem; color: var(--text-2); margin-top: 2px; }
+.results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ===========================
+   MANAGER PAGE
+   =========================== */
+.manager-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+}
+.manager-header h2 { font-size: 1.4rem; font-weight: 900; }
+.manager-search-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.manager-search-bar input {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 120px;
+}
+.manager-search-bar input:focus { border-color: var(--karasuno-orange); }
+.manager-filter { display: flex; gap: 6px; }
+.filter-btn {
+  padding: 8px 14px;
+  border-radius: 99px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1.5px solid var(--border);
+  transition: all 0.18s;
+}
+.filter-btn.active.all     { background: var(--karasuno-black); color: #fff; border-color: var(--karasuno-black); }
+.filter-btn.active.daily   { background: var(--karasuno-orange); color: #fff; border-color: var(--karasuno-orange); }
+.filter-btn.active.weekly  { background: var(--court-blue); color: #fff; border-color: var(--court-blue); }
+.filter-btn.active.monthly { background: var(--success); color: #fff; border-color: var(--success); }
+
+.vocab-table-wrap {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.vocab-table { width: 100%; border-collapse: collapse; }
+.vocab-table th {
+  background: var(--karasuno-black);
+  color: var(--volleyball-white);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+[data-theme="dark"] .vocab-table th { background: #1a1a1a; }
+.vocab-table td { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 0.93rem; }
+.vocab-table tr:hover td { background: var(--surface-2); }
+.vocab-table .word-cell { font-size: 1.15rem; font-weight: 900; }
+.vocab-actions { display: flex; gap: 6px; }
+
+.pagination {
+  display: flex; gap: 6px; align-items: center;
+  justify-content: flex-end; margin-top: 10px;
+}
+.pagination .page-info { font-size: 0.83rem; color: var(--text-2); }
+
+/* ===========================
+   MODAL
+   =========================== */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 26px;
+  max-width: 420px;
+  width: 92%;
+  box-shadow: 0 16px 56px rgba(0,0,0,0.25);
+  border-top: 5px solid var(--karasuno-orange);
+}
+.modal-box h3 { font-size: 1.2rem; font-weight: 900; margin-bottom: 16px; }
+.modal-field { margin-bottom: 13px; }
+.modal-field label {
+  display: block; font-size: 0.82rem; font-weight: 700;
+  color: var(--text-2); margin-bottom: 5px;
+}
+.modal-field input, .modal-field select {
+  width: 100%;
+  padding: 10px 13px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal-field input:focus,
+.modal-field select:focus { border-color: var(--karasuno-orange); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+/* ===========================
+   STATS PAGE
+   =========================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.stat-tile {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 3px solid var(--karasuno-orange);
+}
+.stat-tile .num { font-size: 1.9rem; font-weight: 900; color: var(--karasuno-orange); }
+.stat-tile .lbl { font-size: 0.78rem; color: var(--text-2); margin-top: 4px; }
+
+.charts-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 18px;
+}
+.chart-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.chart-card h3 {
+  font-size: 0.88rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leaderboard-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 18px;
+}
+.leaderboard-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.leaderboard-card h3 {
+  font-size: 0.9rem; font-weight: 800; margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--karasuno-orange);
+}
+.leaderboard-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.leaderboard-item:last-child { border-bottom: none; }
+.leaderboard-rank { font-weight: 900; color: var(--text-3); min-width: 22px; }
+.leaderboard-rank.gold   { color: #E6A800; }
+.leaderboard-rank.silver { color: #999; }
+.leaderboard-rank.bronze { color: #A0522D; }
+.leaderboard-word  { font-weight: 800; flex: 1; }
+.leaderboard-count { color: var(--text-2); font-size: 0.8rem; }
+
+/* ===========================
+   TOAST
+   =========================== */
+#toast {
+  position: fixed;
+  bottom: 22px; right: 22px;
+  background: var(--karasuno-black);
+  color: var(--volleyball-white);
+  padding: 11px 20px;
+  border-radius: 99px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.28s, transform 0.28s;
+  z-index: 9999;
+  pointer-events: none;
+  border-left: 4px solid var(--karasuno-orange);
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* ===========================
+   MISC
+   =========================== */
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text-3);
+}
+.empty-state-icon { font-size: 2.8rem; margin-bottom: 10px; }
+.empty-state-text { font-size: 0.95rem; }
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-title .accent-bar {
+  display: inline-block;
+  width: 5px; height: 24px;
+  background: var(--karasuno-orange);
+  border-radius: 3px;
+}
+
+/* Volleyball decoration SVG */
+.vball-deco {
+  opacity: 0.06;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .charts-row, .leaderboard-grid, .results-grid { grid-template-columns: 1fr; }
+  .home-grid { grid-template-columns: 1fr 1fr; }
+  .quiz-bopomofo { font-size: 2.1rem; letter-spacing: 4px; }
+  .results-score-num { font-size: 3.5rem; }
+  .vocab-table th:nth-child(4), .vocab-table td:nth-child(4) { display: none; }
+}
+@media (max-width: 420px) {
+  .home-grid { grid-template-columns: 1fr; }
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--karasuno-orange); border-radius: 99px; opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ====== HEADER ====== -->
+  <header class="app-header">
+    <div class="app-logo">
+      <span class="logo-ball"></span>
+      <span>
+        <span class="logo-accent">烏野</span><span class="logo-title">國文特訓所</span>
+      </span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" id="themeToggle" title="切換夜間模式">🌙</button>
+      <button class="btn-icon" onclick="showPage('backup')" title="資料備份">💾</button>
+    </div>
+  </header>
+
+  <!-- ====== 儲存失效警告橫幅 ====== -->
+  <div class="storage-warning-banner" id="storageWarningBanner">
+    <div class="storage-warning-icon">⚠️</div>
+    <div class="storage-warning-text">
+      <strong>偵測到本機儲存功能無法使用</strong>
+      <p>目前環境（可能是 Google Sites 嵌入頁面）限制了瀏覽器儲存功能，你新增或練習的進度<u>只能保留在這次瀏覽分頁中</u>，重新整理或關閉分頁後就會消失。</p>
+      <p class="storage-warning-tip">💡 建議：練習完畢後立即到「資料備份」頁面匯出 JSON，下次再匯入即可繼續；或改用「依網址嵌入」的方式取代直接貼上程式碼，可解決此問題。</p>
+    </div>
+    <button class="storage-warning-close" onclick="document.getElementById('storageWarningBanner').classList.remove('show')">✕</button>
+  </div>
+
+  <!-- ====== HOME ====== -->
+  <div class="page active" id="page-home">
+    <div class="home-hero">      <div class="home-hero-inner">
+        <div class="home-hero-eyebrow">KARASUNO VOLLEYBALL CLUB × 國文</div>
+        <h1>不要給我說「做不到」！<br>每天練習，生字記起來！</h1>
+        <p>運用遺忘曲線讓記憶更扎實 — 每日 50 題，三階段 Pool 循環訓練</p>
+        <div id="homePoolSummary" class="pool-summary" style="margin-bottom:0"></div>
+      </div>
+    </div>
+
+    <div class="home-grid">
+      <div class="home-tile" onclick="startQuiz()">
+        <div class="home-tile-icon">🏐</div>
+        <div class="home-tile-title">開始特訓</div>
+        <div class="home-tile-desc">每日 50 題，分 Pool 挑戰</div>
+        <div class="home-tile-quote">「我已無路可退，只有往上衝！」</div>
+      </div>
+      <div class="home-tile" onclick="showPage('manager')">
+        <div class="home-tile-icon">📋</div>
+        <div class="home-tile-title">題庫管理</div>
+        <div class="home-tile-desc">新增、編輯、搜尋生字</div>
+        <div class="home-tile-quote">「先紮好馬步，才能上場。」</div>
+      </div>
+      <div class="home-tile" onclick="showPage('stats')">
+        <div class="home-tile-icon">📊</div>
+        <div class="home-tile-title">戰績統計</div>
+        <div class="home-tile-desc">正確率趨勢與排行榜</div>
+        <div class="home-tile-quote">「看看自己進步了多少！」</div>
+      </div>
+      <div class="home-tile" onclick="showPage('backup')">
+        <div class="home-tile-icon">💾</div>
+        <div class="home-tile-title">資料備份</div>
+        <div class="home-tile-desc">匯出 / 匯入學習進度</div>
+        <div class="home-tile-quote">「努力不能白費，要保存好。」</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;color:var(--text-3);font-size:0.78rem;margin-top:6px;">
+      ⚠️ 資料存於本機瀏覽器，無痕模式或清除瀏覽資料後將消失
+    </div>
+  </div>
+
+  <!-- ====== QUIZ ====== -->
+  <div class="page" id="page-quiz">
+    <div class="quiz-header">
+      <button class="btn btn-secondary btn-sm" onclick="confirmExitQuiz()">← 退出</button>
+      <div class="quiz-progress-bar-wrap">
+        <div class="quiz-progress-bar" id="quizProgressBar" style="width:0%"></div>
+      </div>
+      <div class="quiz-counter" id="quizCounter">1 / 50</div>
+    </div>
+    <div class="quiz-card-big">
+      <div class="quiz-pool-tag" id="quizPoolTag"></div>
+      <div class="quiz-word-label">把下方注音代表的詞語寫在紙上</div>
+      <div class="quiz-bopomofo" id="quizBopomofo">ㄅㄆㄇㄈ</div>
+      <button class="quiz-play-btn" onclick="speakCurrent()">🔊</button>
+      <div class="quiz-hint">點擊聽發音</div>
+      <div class="quiz-shoyo-quote" id="quizQuote"></div>
+    </div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary btn-lg" id="quizNextBtn" onclick="nextQuestion()">下一題 →</button>
+    </div>
+    <div style="text-align:center;margin-top:12px;color:var(--text-3);font-size:0.8rem;">
+      先在紙上寫好答案，再繼續
+    </div>
+  </div>
+
+  <!-- ====== GRADING ====== -->
+  <div class="page" id="page-grading">
+    <div class="grading-intro">
+      <h2>✏️ 比對答案</h2>
+      <p>對照你寫的每一題，誠實標記正確或錯誤</p>
+      <div class="hinata-line">「強者就是能正視自己缺點的人！」— 日向翔陽</div>
+    </div>
+    <div class="grading-progress" id="gradingProgress">尚未批改 0 / 0</div>
+    <div class="grading-list" id="gradingList"></div>
+    <div class="grading-submit-wrap">
+      <button class="btn btn-primary btn-lg" id="gradingSubmitBtn" onclick="submitGrading()" disabled>
+        確認送出 →
+      </button>
+    </div>
+  </div>
+
+  <!-- ====== RESULTS ====== -->
+  <div class="page" id="page-results">
+    <div class="results-score-big">
+      <div class="results-score-inner">
+        <div class="results-score-num" id="resultsScore">45</div>
+        <div class="results-score-denom" id="resultsTotal">/ 50</div>
+        <div class="results-pct" id="resultsPct">90%</div>
+        <div class="results-msg" id="resultsMsg"></div>
+      </div>
+    </div>
+    <div class="results-grid">
+      <div class="results-section" style="border-left:4px solid var(--success)">
+        <h3>🔼 晉級詞彙</h3>
+        <ul class="results-word-list" id="resultsUpgraded"></ul>
+      </div>
+      <div class="results-section" style="border-left:4px solid var(--danger)">
+        <h3>🔁 回到每日特訓</h3>
+        <ul class="results-word-list" id="resultsDowngraded"></ul>
+      </div>
+    </div>
+    <div class="results-pool-stats" id="resultsPoolStats"></div>
+    <div class="results-actions">
+      <button class="btn btn-primary btn-lg" onclick="showPage('home')">回到烏巢</button>
+      <button class="btn btn-secondary" onclick="startQuiz()">再來一場！</button>
+    </div>
+  </div>
+
+  <!-- ====== MANAGER ====== -->
+  <div class="page" id="page-manager">
+    <div class="manager-header">
+      <div class="page-title"><span class="accent-bar"></span>題庫管理</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">＋ 新增詞彙</button>
+    </div>
+    <div class="manager-search-bar">
+      <input type="text" id="managerSearch" placeholder="搜尋詞彙或注音…" oninput="renderManager()">
+      <div class="manager-filter">
+        <button class="filter-btn active all" onclick="setManagerFilter('all',this)">全部</button>
+        <button class="filter-btn daily"  onclick="setManagerFilter('daily',this)">每日</button>
+        <button class="filter-btn weekly" onclick="setManagerFilter('weekly',this)">每週</button>
+        <button class="filter-btn monthly" onclick="setManagerFilter('monthly',this)">每月</button>
+      </div>
+    </div>
+    <div class="vocab-table-wrap">
+      <table class="vocab-table">
+        <thead>
+          <tr>
+            <th>詞彙</th>
+            <th>注音</th>
+            <th>Pool</th>
+            <th>答對 / 答錯</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="managerTableBody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="managerPagination"></div>
+    <button class="btn btn-secondary btn-sm" onclick="showPage('home')" style="margin-top:10px">← 返回</button>
+  </div>
+
+  <!-- ====== STATS ====== -->
+  <div class="page" id="page-stats">
+    <div class="page-title"><span class="accent-bar"></span>戰績統計</div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <h3>Pool 分布</h3>
+        <canvas id="chartPoolDist" height="200"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>近 14 日正確率</h3>
+        <canvas id="chartAccuracy" height="200"></canvas>
+      </div>
+    </div>
+    <div class="leaderboard-grid">
+      <div class="leaderboard-card">
+        <h3>🔴 最需要加強 Top 10</h3>
+        <div id="leaderboardWrong"></div>
+      </div>
+      <div class="leaderboard-card">
+        <h3>🟡 最熟練詞彙 Top 10</h3>
+        <div id="leaderboardCorrect"></div>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="showPage('home')" style="margin-top:10px">← 返回</button>
+  </div>
+
+  <!-- ====== BACKUP ====== -->
+  <div class="page" id="page-backup">
+    <div class="page-title"><span class="accent-bar"></span>資料備份與還原</div>
+    <p style="color:var(--text-2);margin-bottom:18px;font-size:0.88rem;">匯出 JSON 可在換電腦或換瀏覽器後還原進度，請定期備份！</p>
+
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="font-size:1.05rem;font-weight:800;margin-bottom:6px;color:var(--karasuno-orange)">📤 匯出資料</h3>
+      <p style="color:var(--text-2);font-size:0.87rem;margin-bottom:12px">下載包含所有詞彙、Pool 狀態與學習紀錄的 JSON 檔案</p>
+      <button class="btn btn-primary" onclick="exportData()">下載備份 JSON</button>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="font-size:1.05rem;font-weight:800;margin-bottom:6px;color:var(--court-blue)">📥 匯入資料</h3>
+      <p style="color:var(--text-2);font-size:0.87rem;margin-bottom:12px">選擇先前匯出的 JSON 檔案還原進度</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+        <button class="btn btn-blue btn-sm" onclick="document.getElementById('importFile').click()">選擇 JSON 檔</button>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.88rem">
+          <input type="radio" name="importMode" value="merge" checked> 合併（保留現有資料）
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.88rem">
+          <input type="radio" name="importMode" value="overwrite"> 覆蓋（完全取代）
+        </label>
+      </div>
+    </div>
+
+    <div class="card" style="border:2px solid var(--danger);margin-bottom:14px">
+      <h3 style="font-size:1rem;font-weight:800;color:var(--danger);margin-bottom:5px">⚠️ 清除所有資料</h3>
+      <p style="color:var(--text-2);font-size:0.87rem;margin-bottom:12px">此操作無法復原，請先匯出備份！</p>
+      <button class="btn btn-danger btn-sm" onclick="clearAllData()">清除並重置</button>
+    </div>
+
+    <button class="btn btn-secondary btn-sm" onclick="showPage('home')">← 返回</button>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- ====== MODAL ====== -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">新增詞彙</h3>
+    <div class="modal-field">
+      <label>詞彙 *</label>
+      <input type="text" id="modalWord" placeholder="例：辯論">
+    </div>
+    <div class="modal-field">
+      <label>注音 *</label>
+      <input type="text" id="modalBopomofo" placeholder="例：ㄅㄧㄢˋ ㄌㄨㄣˋ">
+    </div>
+    <div class="modal-field">
+      <label>加入 Pool</label>
+      <select id="modalPool">
+        <option value="daily">每日特訓 (Daily)</option>
+        <option value="weekly">每週複習 (Weekly)</option>
+        <option value="monthly">每月維持 (Monthly)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary btn-sm" id="modalSaveBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ==========================================
+// 排球少年語錄池
+// ==========================================
+const HAIKYUU_QUOTES = [
+  '「不管打多少次，只要還站得起來就好！」— 日向翔陽',
+  '「真正的強者，是能把失敗化為養分的人。」— 烏養一繁',
+  '「別以為自己是太陽，就停止轉動！」— 影山飛雄',
+  '「贏了才有意義，但輸了也要學到東西。」— 澤村大地',
+  '「不要覺得自己渺小，小個子也能跳得最高！」— 日向翔陽',
+  '「每個人的努力都有價值，不分位置高低。」— 菅原孝支',
+  '「練習是讓自己在關鍵時刻不後悔的唯一方法。」— 月島螢',
+  '「特訓永遠不嫌多。」— 烏野男排',
+  '「對手越強，越要冷靜思考。」— 影山飛雄',
+  '「只要眼睛還能看見球，比賽就沒有結束！」— 日向翔陽',
+];
+function randomQuote() {
+  return HAIKYUU_QUOTES[Math.floor(Math.random() * HAIKYUU_QUOTES.length)];
+}
+
+const RESULT_MSGS = {
+  perfect: '「滿分！你就是這個時代的天才！」🔥',
+  great:   '「幹得漂亮！繼續保持這股氣勢！」⚡',
+  good:    '「不錯的表現，但還有進步空間！」💪',
+  ok:      '「今天是敗仗，但明天繼續站起來！」🏐',
+  bad:     '「烏野不放棄！現在開始特訓來得及！」🔄',
+};
+function resultMsg(pct) {
+  if (pct === 100) return RESULT_MSGS.perfect;
+  if (pct >= 85)  return RESULT_MSGS.great;
+  if (pct >= 65)  return RESULT_MSGS.good;
+  if (pct >= 45)  return RESULT_MSGS.ok;
+  return RESULT_MSGS.bad;
+}
+
+// ==========================================
+// DATA LAYER — LocalStorage（含容錯偵測）
+// ==========================================
+const LS_VOCAB   = 'vocab_v2';
+const LS_HISTORY = 'history_v2';
+const LS_PROBE   = '__storage_probe__';
+
+// 是否偵測到 LocalStorage 無法持久化（sandboxed iframe 常見問題）
+let storageBroken = false;
+
+// 記憶體內備援儲存（LocalStorage 失效時，至少讓「這一次」的操作正常運作）
+const memoryStore = { vocab: null, history: null };
+
+// 真正驗證 LocalStorage 能不能「寫入後讀回」，而不只是 try/catch 不報錯
+// （sandboxed iframe 常見情況是 setItem 不丟錯，但資料根本沒存進去）
+function verifyStorageWorks() {
+  try {
+    const testValue = 'ok-' + Date.now();
+    localStorage.setItem(LS_PROBE, testValue);
+    const readBack = localStorage.getItem(LS_PROBE);
+    localStorage.removeItem(LS_PROBE);
+    return readBack === testValue;
+  } catch (e) {
+    return false;
+  }
+}
+
+function loadVocab() {
+  if (storageBroken) return memoryStore.vocab || [];
+  try {
+    const raw = localStorage.getItem(LS_VOCAB);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return memoryStore.vocab || [];
+  }
+}
+
+function _saveVocab(d) {
+  memoryStore.vocab = d; // 永遠先存一份在記憶體，當作保險
+  if (storageBroken) return;
+  try {
+    localStorage.setItem(LS_VOCAB, JSON.stringify(d));
+    // 寫入後立刻讀回確認，抓出「不報錯但沒真的存進去」的狀況
+    const check = localStorage.getItem(LS_VOCAB);
+    if (check === null) {
+      handleStorageFailure();
+    }
+  } catch (e) {
+    handleStorageFailure();
+  }
+}
+
+function loadHistory() {
+  if (storageBroken) return memoryStore.history || {};
+  try {
+    const raw = localStorage.getItem(LS_HISTORY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return memoryStore.history || {};
+  }
+}
+
+function _saveHistory(d) {
+  memoryStore.history = d;
+  if (storageBroken) return;
+  try {
+    localStorage.setItem(LS_HISTORY, JSON.stringify(d));
+  } catch (e) {
+    handleStorageFailure();
+  }
+}
+
+// 偵測到儲存失效時：標記狀態、顯示警告橫幅，且只觸發一次
+let storageWarningShown = false;
+function handleStorageFailure() {
+  storageBroken = true;
+  if (!storageWarningShown) {
+    storageWarningShown = true;
+    showStorageWarningBanner();
+  }
+}
+
+function showStorageWarningBanner() {
+  const banner = document.getElementById('storageWarningBanner');
+  if (banner) banner.classList.add('show');
+}
+
+function createWord(word, bopomofo, pool = 'daily') {
+  return {
+    id: Date.now() + Math.random(),
+    word, bopomofo, pool,
+    correctStreak: 0,
+    totalCorrect: 0,
+    totalWrong: 0,
+    timesSeen: 0,
+    lastPracticeDate: '',
+    nextReviewDate: todayStr()
+  };
+}
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function addDays(str, n) {
+  const d = new Date(str || todayStr());
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// ==========================================
+// QUIZ SELECTION
+// ==========================================
+function selectQuizWords() {
+  const vocab = loadVocab();
+  const today = todayStr();
+  const pools = { daily: [], weekly: [], monthly: [] };
+  vocab.forEach(w => { if (pools[w.pool]) pools[w.pool].push(w); });
+
+  function score(w) {
+    const overdue   = w.nextReviewDate <= today ? 10000 : 0;
+    const daysSince = w.lastPracticeDate
+      ? Math.floor((new Date(today) - new Date(w.lastPracticeDate)) / 86400000)
+      : 9999;
+    return overdue + daysSince * 10 + w.totalWrong * 5 - w.timesSeen;
+  }
+  function pick(pool, n) {
+    return [...pool].sort((a, b) => score(b) - score(a)).slice(0, n);
+  }
+
+  let daily   = pick(pools.daily,   30);
+  let weekly  = pick(pools.weekly,  15);
+  let monthly = pick(pools.monthly,  5);
+
+  // Fill shortfall
+  const usedIds = new Set([...daily, ...weekly, ...monthly].map(w => w.id));
+  function fillFrom(source, need) {
+    return pick(source.filter(w => !usedIds.has(w.id)), need);
+  }
+
+  let total = daily.length + weekly.length + monthly.length;
+  if (total < 50) {
+    const extra = fillFrom(pools.daily, 50 - total);
+    daily = [...daily, ...extra];
+    extra.forEach(w => usedIds.add(w.id));
+  }
+  total = daily.length + weekly.length + monthly.length;
+  if (total < 50) {
+    const extra = fillFrom(pools.weekly, 50 - total);
+    weekly = [...weekly, ...extra];
+    extra.forEach(w => usedIds.add(w.id));
+  }
+  total = daily.length + weekly.length + monthly.length;
+  if (total < 50) {
+    const extra = fillFrom(pools.monthly, 50 - total);
+    monthly = [...monthly, ...extra];
+  }
+
+  const result = [...daily, ...weekly, ...monthly].slice(0, 50);
+  // Shuffle
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// ==========================================
+// QUIZ STATE
+// ==========================================
+let quizWords = [];
+let quizIdx   = 0;
+let gradingResults = [];
+
+function startQuiz() {
+  const vocab = loadVocab();
+  if (vocab.length === 0) {
+    showToast('⚠️ 請先在題庫管理中新增詞彙！');
+    showPage('manager');
+    return;
+  }
+  quizWords = selectQuizWords();
+  if (quizWords.length === 0) { showToast('詞彙不足'); return; }
+  quizIdx = 0;
+  showPage('quiz');
+  renderQuestion();
+}
+
+const POOL_LABEL = { daily: '每日特訓', weekly: '每週複習', monthly: '每月維持' };
+const QUIZ_QUOTES_BY_POOL = {
+  daily:   '「基礎訓練最重要！」',
+  weekly:  '「鞏固記憶，等待上場！」',
+  monthly: '「已近精熟，繼續維持！」',
+};
+
+function renderQuestion() {
+  const w = quizWords[quizIdx];
+  const total = quizWords.length;
+  document.getElementById('quizCounter').textContent = `${quizIdx + 1} / ${total}`;
+  document.getElementById('quizProgressBar').style.width = `${(quizIdx / total) * 100}%`;
+  document.getElementById('quizBopomofo').textContent = w.bopomofo;
+  document.getElementById('quizPoolTag').innerHTML =
+    `<span class="pool-badge ${w.pool}">${POOL_LABEL[w.pool]}</span>`;
+  document.getElementById('quizQuote').textContent = QUIZ_QUOTES_BY_POOL[w.pool] || '';
+  document.getElementById('quizNextBtn').textContent =
+    quizIdx < total - 1 ? '下一題 →' : '全部完成，進入批改 →';
+}
+
+function nextQuestion() {
+  quizIdx++;
+  if (quizIdx >= quizWords.length) startGrading();
+  else renderQuestion();
+}
+
+function speakCurrent() {
+  const w = quizWords[quizIdx];
+  if (!w) return;
+  const u = new SpeechSynthesisUtterance(w.word);
+  u.lang = 'zh-TW'; u.rate = 0.9; u.pitch = 1; u.volume = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+function confirmExitQuiz() {
+  if (confirm('確定退出訓練？本次進度將不會儲存。')) showPage('home');
+}
+
+// ==========================================
+// GRADING
+// ==========================================
+function startGrading() {
+  gradingResults = quizWords.map(w => ({
+    id: w.id, word: w.word, bopomofo: w.bopomofo, pool: w.pool, graded: null
+  }));
+  renderGrading();
+  showPage('grading');
+}
+
+function renderGrading() {
+  const list = document.getElementById('gradingList');
+  list.innerHTML = '';
+  gradingResults.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = `grading-item${item.graded === 'correct' ? ' correct' : item.graded === 'wrong' ? ' wrong' : ''}`;
+    div.innerHTML = `
+      <span class="pool-badge ${item.pool}">${POOL_LABEL[item.pool]}</span>
+      <span class="grading-item-word">${item.word}</span>
+      <span class="grading-item-bopomofo">${item.bopomofo}</span>
+      <div class="grading-item-actions">
+        ${item.graded === null
+          ? `<button class="btn btn-success btn-sm" onclick="gradeItem(${i},'correct')">✓ 答對了</button>
+             <button class="btn btn-danger btn-sm"  onclick="gradeItem(${i},'wrong')">✗ 答錯了</button>`
+          : `<span class="grading-item-graded">${item.graded === 'correct' ? '✅' : '❌'}</span>
+             <button class="btn btn-secondary btn-sm" style="font-size:0.76rem" onclick="gradeItem(${i},null)">重新標記</button>`
+        }
+      </div>`;
+    list.appendChild(div);
+  });
+  updateGradingProgress();
+}
+
+function gradeItem(idx, val) {
+  gradingResults[idx].graded = val;
+  renderGrading();
+}
+
+function updateGradingProgress() {
+  const done  = gradingResults.filter(r => r.graded !== null).length;
+  const total = gradingResults.length;
+  document.getElementById('gradingProgress').textContent =
+    `已批改 ${done} / ${total} 題${done < total ? '　— 還剩 ' + (total - done) + ' 題未標記' : '　✓ 全部完成！'}`;
+  document.getElementById('gradingSubmitBtn').disabled = done < total;
+}
+
+// ==========================================
+// SUBMIT & UPDATE POOL
+// ==========================================
+function submitGrading() {
+  const vocab   = loadVocab();
+  const history = loadHistory();
+  const today   = todayStr();
+  const upgraded = [], downgraded = [];
+
+  gradingResults.forEach(result => {
+    const w = vocab.find(v => v.id === result.id);
+    if (!w) return;
+    w.timesSeen = (w.timesSeen || 0) + 1;
+    w.lastPracticeDate = today;
+
+    if (result.graded === 'correct') {
+      w.correctStreak = (w.correctStreak || 0) + 1;
+      w.totalCorrect  = (w.totalCorrect  || 0) + 1;
+      if (w.correctStreak >= 3) {
+        const prev = w.pool;
+        if (w.pool === 'daily')  { w.pool = 'weekly';  upgraded.push({ word: w.word, from: 'daily',  to: 'weekly' }); }
+        else if (w.pool === 'weekly') { w.pool = 'monthly'; upgraded.push({ word: w.word, from: 'weekly', to: 'monthly' }); }
+        if (w.pool !== prev) w.correctStreak = 0;
+      }
+      const intervals = { daily: 1, weekly: 7, monthly: 30 };
+      w.nextReviewDate = addDays(today, intervals[w.pool] || 1);
+    } else {
+      const prev = w.pool;
+      w.correctStreak = 0;
+      w.totalWrong    = (w.totalWrong || 0) + 1;
+      if (w.pool !== 'daily') { w.pool = 'daily'; downgraded.push({ word: w.word, from: prev }); }
+      w.nextReviewDate = addDays(today, 1);
+    }
+  });
+
+  _saveVocab(vocab);
+
+  // 記錄歷史
+  const correct = gradingResults.filter(r => r.graded === 'correct').length;
+  const total   = gradingResults.length;
+  if (!history[today]) history[today] = { correct: 0, total: 0 };
+  history[today].correct += correct;
+  history[today].total   += total;
+  _saveHistory(history);
+
+  showResults(correct, total, upgraded, downgraded);
+}
+
+// ==========================================
+// RESULTS
+// ==========================================
+function showResults(correct, total, upgraded, downgraded) {
+  const pct = Math.round((correct / total) * 100);
+  document.getElementById('resultsScore').textContent = correct;
+  document.getElementById('resultsTotal').textContent = `/ ${total}`;
+  document.getElementById('resultsPct').textContent   = `${pct}%`;
+  document.getElementById('resultsMsg').textContent   = resultMsg(pct);
+
+  const upEl = document.getElementById('resultsUpgraded');
+  const poolNameMap = { daily:'每日', weekly:'每週', monthly:'每月' };
+  upEl.innerHTML = upgraded.length
+    ? upgraded.map(u => `<li class="results-word-chip">${u.word} <span style="color:var(--text-3);font-size:0.73rem">${poolNameMap[u.from]}→${poolNameMap[u.to]}</span></li>`).join('')
+    : '<li style="color:var(--text-3);font-size:0.85rem">本次無詞彙晉級</li>';
+
+  const downEl = document.getElementById('resultsDowngraded');
+  downEl.innerHTML = downgraded.length
+    ? downgraded.map(d => `<li class="results-word-chip">${d.word}</li>`).join('')
+    : '<li style="color:var(--text-3);font-size:0.85rem">本次無詞彙降級</li>';
+
+  const vocab = loadVocab();
+  const counts = { daily: 0, weekly: 0, monthly: 0 };
+  vocab.forEach(w => { if (counts[w.pool] !== undefined) counts[w.pool]++; });
+  document.getElementById('resultsPoolStats').innerHTML = `
+    <div class="results-pool-stat daily">
+      <div class="num">${counts.daily}</div>
+      <div class="lbl">每日特訓</div>
+    </div>
+    <div class="results-pool-stat weekly">
+      <div class="num">${counts.weekly}</div>
+      <div class="lbl">每週複習</div>
+    </div>
+    <div class="results-pool-stat monthly">
+      <div class="num">${counts.monthly}</div>
+      <div class="lbl">每月維持</div>
+    </div>
+  `;
+  showPage('results');
+}
+
+// ==========================================
+// MANAGER
+// ==========================================
+let managerFilter = 'all';
+let managerPage   = 1;
+const MANAGER_PAGE_SIZE = 30;
+let editingId = null;
+
+function setManagerFilter(pool, el) {
+  managerFilter = pool;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  managerPage = 1;
+  renderManager();
+}
+
+function renderManager() {
+  const vocab = loadVocab();
+  const q = (document.getElementById('managerSearch').value || '').trim().toLowerCase();
+  let filtered = vocab.filter(w => {
+    const matchF = managerFilter === 'all' || w.pool === managerFilter;
+    const matchQ = !q || w.word.includes(q) || w.bopomofo.toLowerCase().includes(q);
+    return matchF && matchQ;
+  });
+
+  const total = filtered.length;
+  const pages = Math.ceil(total / MANAGER_PAGE_SIZE) || 1;
+  if (managerPage > pages) managerPage = pages;
+  const paged = filtered.slice((managerPage - 1) * MANAGER_PAGE_SIZE, managerPage * MANAGER_PAGE_SIZE);
+
+  const tbody = document.getElementById('managerTableBody');
+  if (!paged.length) {
+    tbody.innerHTML = `<tr><td colspan="5">
+      <div class="empty-state">
+        <div class="empty-state-icon">🏐</div>
+        <div class="empty-state-text">找不到詞彙，換個關鍵字試試</div>
+      </div></td></tr>`;
+  } else {
+    tbody.innerHTML = paged.map(w => `
+      <tr>
+        <td class="word-cell">${w.word}</td>
+        <td>${w.bopomofo}</td>
+        <td><span class="pool-badge ${w.pool}">${POOL_LABEL[w.pool]}</span></td>
+        <td>
+          <span style="color:var(--success);font-weight:800">${w.totalCorrect||0}</span>
+          &nbsp;/&nbsp;
+          <span style="color:var(--danger);font-weight:800">${w.totalWrong||0}</span>
+        </td>
+        <td>
+          <div class="vocab-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal('${w.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm"    onclick="deleteWord('${w.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  const pag = document.getElementById('managerPagination');
+  if (pages <= 1) { pag.innerHTML = `<span class="page-info">共 ${total} 筆</span>`; return; }
+  pag.innerHTML = `
+    <span class="page-info">共 ${total} 筆，第 ${managerPage} / ${pages} 頁</span>
+    <button class="btn btn-secondary btn-sm" onclick="managerPage=Math.max(1,managerPage-1);renderManager()" ${managerPage===1?'disabled':''}>‹ 上頁</button>
+    <button class="btn btn-secondary btn-sm" onclick="managerPage=Math.min(${pages},managerPage+1);renderManager()" ${managerPage===pages?'disabled':''}>下頁 ›</button>
+  `;
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '新增詞彙';
+  document.getElementById('modalWord').value = '';
+  document.getElementById('modalBopomofo').value = '';
+  document.getElementById('modalPool').value = 'daily';
+  document.getElementById('addModal').classList.add('open');
+}
+function openEditModal(id) {
+  const vocab = loadVocab();
+  const w = vocab.find(v => String(v.id) === String(id));
+  if (!w) return;
+  editingId = w.id;
+  document.getElementById('modalTitle').textContent = '編輯詞彙';
+  document.getElementById('modalWord').value = w.word;
+  document.getElementById('modalBopomofo').value = w.bopomofo;
+  document.getElementById('modalPool').value = w.pool;
+  document.getElementById('addModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('addModal').classList.remove('open');
+}
+function doSaveVocab() {
+  const word      = document.getElementById('modalWord').value.trim();
+  const bopomofo  = document.getElementById('modalBopomofo').value.trim();
+  const pool      = document.getElementById('modalPool').value;
+  if (!word || !bopomofo) { showToast('⚠️ 請填寫詞彙與注音'); return; }
+  const vocab = loadVocab();
+  if (editingId !== null) {
+    const idx = vocab.findIndex(v => v.id === editingId);
+    if (idx !== -1) { vocab[idx].word = word; vocab[idx].bopomofo = bopomofo; vocab[idx].pool = pool; }
+  } else {
+    vocab.push(createWord(word, bopomofo, pool));
+  }
+  _saveVocab(vocab);
+  closeModal();
+  renderManager();
+  updateHomePool();
+  showToast(
+    storageBroken
+      ? (editingId ? '⚠️ 已更新（僅暫存，重新整理會消失）' : '⚠️ 已新增（僅暫存，重新整理會消失）')
+      : (editingId ? '✅ 已更新詞彙' : '✅ 已新增詞彙')
+  );
+}
+function deleteWord(id) {
+  if (!confirm('確定刪除這個詞彙？')) return;
+  _saveVocab(loadVocab().filter(v => String(v.id) !== String(id)));
+  renderManager();
+  updateHomePool();
+  showToast('🗑 已刪除');
+}
+
+// ==========================================
+// STATS
+// ==========================================
+let chartPool = null, chartAcc = null;
+
+function renderStats() {
+  const vocab   = loadVocab();
+  const history = loadHistory();
+  const counts  = { daily: 0, weekly: 0, monthly: 0 };
+  vocab.forEach(w => { if (counts[w.pool] !== undefined) counts[w.pool]++; });
+  const totalC = vocab.reduce((s, w) => s + (w.totalCorrect||0), 0);
+  const totalW = vocab.reduce((s, w) => s + (w.totalWrong||0),   0);
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-tile"><div class="num">${vocab.length}</div><div class="lbl">總詞彙數</div></div>
+    <div class="stat-tile" style="border-bottom-color:var(--daily)">
+      <div class="num" style="color:var(--daily)">${counts.daily}</div><div class="lbl">每日特訓</div></div>
+    <div class="stat-tile" style="border-bottom-color:var(--weekly)">
+      <div class="num" style="color:var(--weekly)">${counts.weekly}</div><div class="lbl">每週複習</div></div>
+    <div class="stat-tile" style="border-bottom-color:var(--monthly)">
+      <div class="num" style="color:var(--monthly)">${counts.monthly}</div><div class="lbl">每月維持</div></div>
+    <div class="stat-tile" style="border-bottom-color:var(--success)">
+      <div class="num" style="color:var(--success)">${totalC}</div><div class="lbl">總答對次數</div></div>
+    <div class="stat-tile" style="border-bottom-color:var(--danger)">
+      <div class="num" style="color:var(--danger)">${totalW}</div><div class="lbl">總答錯次數</div></div>
+  `;
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#BBBBBB' : '#555555';
+  const gridColor = isDark ? '#3A3A3A' : '#EEEEEE';
+
+  if (chartPool) chartPool.destroy();
+  chartPool = new Chart(document.getElementById('chartPoolDist').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['每日特訓', '每週複習', '每月維持'],
+      datasets: [{
+        data: [counts.daily, counts.weekly, counts.monthly],
+        backgroundColor: ['#FF7F00', '#005A9E', '#1A8C4E'],
+        borderWidth: 3,
+        borderColor: isDark ? '#2D2D2D' : '#FFFFFF',
+      }]
+    },
+    options: {
+      plugins: { legend: { labels: { color: textColor, font: { size: 12, weight: '700' } } } },
+      cutout: '58%'
+    }
+  });
+
+  // 近 14 日
+  const days = [], accs = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = addDays(todayStr(), -i);
+    days.push(d.slice(5));
+    const h = history[d];
+    accs.push(h && h.total > 0 ? Math.round((h.correct / h.total) * 100) : null);
+  }
+  if (chartAcc) chartAcc.destroy();
+  chartAcc = new Chart(document.getElementById('chartAccuracy').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [{
+        label: '正確率 %',
+        data: accs,
+        borderColor: '#FF7F00',
+        backgroundColor: 'rgba(255,127,0,0.12)',
+        tension: 0.35,
+        fill: true,
+        spanGaps: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#FF7F00',
+      }]
+    },
+    options: {
+      scales: {
+        y: { min: 0, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
+        x: { ticks: { color: textColor, maxRotation: 45 }, grid: { display: false } }
+      },
+      plugins: { legend: { labels: { color: textColor } } }
+    }
+  });
+
+  // Leaderboards
+  const wrongTop   = [...vocab].sort((a,b) => (b.totalWrong||0)   - (a.totalWrong||0)).slice(0, 10);
+  const correctTop = [...vocab].sort((a,b) => (b.totalCorrect||0) - (a.totalCorrect||0)).slice(0, 10);
+
+  function rankClass(i) {
+    return i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+  }
+  function renderLB(el, items, key, icon) {
+    if (!items.length) { el.innerHTML = '<div style="color:var(--text-3);font-size:0.85rem;padding:8px 0">尚無資料</div>'; return; }
+    el.innerHTML = items.map((w, i) => `
+      <div class="leaderboard-item">
+        <span class="leaderboard-rank ${rankClass(i)}">${i + 1}</span>
+        <span class="leaderboard-word">${w.word}</span>
+        <span class="leaderboard-count">${icon} ${w[key] || 0} 次</span>
+      </div>`).join('');
+  }
+  renderLB(document.getElementById('leaderboardWrong'),   wrongTop,   'totalWrong',   '❌');
+  renderLB(document.getElementById('leaderboardCorrect'), correctTop, 'totalCorrect', '✅');
+}
+
+// ==========================================
+// BACKUP
+// ==========================================
+function exportData() {
+  const data = {
+    version: 2,
+    exportDate: new Date().toISOString(),
+    vocabulary: loadVocab(),
+    history: loadHistory()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `karasuno-vocab-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 備份檔已下載');
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.vocabulary || !Array.isArray(data.vocabulary)) throw new Error('格式錯誤');
+      const mode = document.querySelector('input[name="importMode"]:checked').value;
+      if (mode === 'overwrite') {
+        _saveVocab(data.vocabulary);
+        _saveHistory(data.history || {});
+        showToast(`✅ 已覆蓋匯入 ${data.vocabulary.length} 筆詞彙`);
+      } else {
+        const existing = loadVocab();
+        const existMap = {};
+        existing.forEach(w => { existMap[w.word] = w; });
+        let added = 0, skipped = 0;
+        data.vocabulary.forEach(w => {
+          if (existMap[w.word]) { skipped++; }
+          else { existing.push(w); added++; }
+        });
+        _saveVocab(existing);
+        const h = loadHistory();
+        if (data.history) {
+          Object.entries(data.history).forEach(([d, v]) => {
+            if (!h[d]) h[d] = v;
+            else { h[d].correct += v.correct; h[d].total += v.total; }
+          });
+          _saveHistory(h);
+        }
+        showToast(`✅ 合併完成：新增 ${added} 筆，略過 ${skipped} 筆`);
+      }
+      updateHomePool();
+      event.target.value = '';
+    } catch (err) {
+      showToast('❌ 匯入失敗：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('確定要清除全部資料嗎？\n此操作無法復原，請先備份！')) return;
+  if (!confirm('最後確認：清除後所有訓練紀錄消失，確定嗎？')) return;
+  memoryStore.vocab = null;
+  memoryStore.history = null;
+  try { localStorage.removeItem(LS_VOCAB); } catch {}
+  try { localStorage.removeItem(LS_HISTORY); } catch {}
+  updateHomePool();
+  showToast('🗑 已清除所有資料');
+}
+
+// ==========================================
+// PAGE NAVIGATION
+// ==========================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'home')    updateHomePool();
+  if (name === 'manager') { managerPage = 1; renderManager(); }
+  if (name === 'stats')   renderStats();
+}
+
+function updateHomePool() {
+  const vocab = loadVocab();
+  const counts = { daily: 0, weekly: 0, monthly: 0 };
+  vocab.forEach(w => { if (counts[w.pool] !== undefined) counts[w.pool]++; });
+  document.getElementById('homePoolSummary').innerHTML = `
+    <div class="pool-chip"><span class="dot daily"></span>每日 <b>${counts.daily}</b></div>
+    <div class="pool-chip"><span class="dot weekly"></span>每週 <b>${counts.weekly}</b></div>
+    <div class="pool-chip"><span class="dot monthly"></span>每月 <b>${counts.monthly}</b></div>
+    <div class="pool-chip">🏐 共 <b>${vocab.length}</b> 詞</div>
+  `;
+}
+
+// ==========================================
+// DARK MODE（烏野夜間版）
+// ==========================================
+function initTheme() {
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+});
+
+// ==========================================
+// TOAST
+// ==========================================
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ==========================================
+// MODAL EVENTS
+// ==========================================
+document.getElementById('addModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('modalSaveBtn').addEventListener('click', doSaveVocab);
+document.getElementById('modalWord').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('modalBopomofo').focus(); });
+document.getElementById('modalBopomofo').addEventListener('keydown', e => { if (e.key === 'Enter') doSaveVocab(); });
+
+// ==========================================
+// SAMPLE DATA（首次啟動）
+// ==========================================
+function initSampleData() {
+  if (loadVocab().length > 0) return;
+  const samples = [
+    ['辯論','ㄅㄧㄢˋ ㄌㄨㄣˋ','daily'],
+    ['陶冶','ㄊㄠˊ ㄧㄝˇ','daily'],
+    ['璀璨','ㄘㄨㄟˇ ㄘㄢˋ','daily'],
+    ['矗立','ㄔㄨˋ ㄌㄧˋ','daily'],
+    ['斑駁','ㄅㄢ ㄅㄛˊ','daily'],
+    ['蒼茫','ㄘㄤ ㄇㄤˊ','daily'],
+    ['絢爛','ㄒㄩㄢˋ ㄌㄢˋ','daily'],
+    ['雋永','ㄐㄩㄢˋ ㄩㄥˇ','daily'],
+    ['韜光養晦','ㄊㄠ ㄍㄨㄤ ㄧㄤˇ ㄏㄨㄟˋ','daily'],
+    ['游刃有餘','ㄧㄡˊ ㄖㄣˋ ㄧㄡˇ ㄩˊ','daily'],
+    ['熙熙攘攘','ㄒㄧ ㄒㄧ ㄖㄤˇ ㄖㄤˇ','daily'],
+    ['振振有詞','ㄓㄣˋ ㄓㄣˋ ㄧㄡˇ ㄘˊ','daily'],
+  ];
+  _saveVocab(samples.map(([w, b, p]) => createWord(w, b, p)));
+}
+
+// ==========================================
+// INIT
+// ==========================================
+// 一開始就先驗證儲存能力，越早偵測越好
+if (!verifyStorageWorks()) {
+  handleStorageFailure();
+}
+
+initTheme();
+initSampleData();
+updateHomePool();
+</script>
+</body>
+</html>

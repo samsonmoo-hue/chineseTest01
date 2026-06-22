@@ -523,6 +523,7 @@ input, select, textarea { font-family: var(--font); }
 .grading-item.wrong   { border-color: var(--danger);  background: var(--danger-light); }
 .grading-item-word     { font-size: 1.35rem; font-weight: 900; flex: 1; }
 .grading-item-bopomofo { font-size: 0.88rem; color: var(--text-2); flex: 1.2; }
+.grading-mode-icon { font-size: 0.85rem; flex-shrink: 0; opacity: 0.7; }
 .grading-item-actions  { display: flex; gap: 6px; flex-shrink: 0; }
 .grading-item-graded   { font-size: 1.4rem; }
 .grading-submit-wrap   { text-align: center; margin-top: 8px; }
@@ -670,6 +671,18 @@ input, select, textarea { font-family: var(--font); }
 .vocab-table td { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 0.93rem; }
 .vocab-table tr:hover td { background: var(--surface-2); }
 .vocab-table .word-cell { font-size: 1.15rem; font-weight: 900; }
+.quiz-mode-chip {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.quiz-mode-chip.b2w { background: var(--karasuno-orange-light); color: var(--karasuno-orange-dark); }
+.quiz-mode-chip.w2b { background: var(--court-blue-light); color: var(--court-blue-dark); }
+[data-theme="dark"] .quiz-mode-chip.b2w { background: #3D2000; color: #FFAA44; }
+[data-theme="dark"] .quiz-mode-chip.w2b { background: #003566; color: #7FC8FF; }
 .vocab-actions { display: flex; gap: 6px; }
 
 .pagination {
@@ -718,6 +731,34 @@ input, select, textarea { font-family: var(--font); }
 }
 .modal-field input:focus,
 .modal-field select:focus { border-color: var(--karasuno-orange); }
+
+/* 考法切換按鈕（segmented control） */
+.quiz-mode-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  border: 1.5px solid var(--border);
+}
+.quiz-mode-option {
+  flex: 1;
+  padding: 9px 8px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-2);
+  background: transparent;
+  text-align: center;
+  transition: background 0.18s, color 0.18s;
+  line-height: 1.3;
+}
+.quiz-mode-option:hover { color: var(--text); }
+.quiz-mode-option.active {
+  background: var(--karasuno-orange);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255,127,0,0.35);
+}
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 
 /* ===========================
@@ -847,7 +888,8 @@ input, select, textarea { font-family: var(--font); }
   .home-grid { grid-template-columns: 1fr 1fr; }
   .quiz-bopomofo { font-size: 2.1rem; letter-spacing: 4px; }
   .results-score-num { font-size: 3.5rem; }
-  .vocab-table th:nth-child(4), .vocab-table td:nth-child(4) { display: none; }
+  .vocab-table th:nth-child(3), .vocab-table td:nth-child(3),
+  .vocab-table th:nth-child(5), .vocab-table td:nth-child(5) { display: none; }
 }
 @media (max-width: 420px) {
   .home-grid { grid-template-columns: 1fr; }
@@ -940,10 +982,10 @@ input, select, textarea { font-family: var(--font); }
     </div>
     <div class="quiz-card-big">
       <div class="quiz-pool-tag" id="quizPoolTag"></div>
-      <div class="quiz-word-label">把下方注音代表的詞語寫在紙上</div>
-      <div class="quiz-bopomofo" id="quizBopomofo">ㄅㄆㄇㄈ</div>
-      <button class="quiz-play-btn" onclick="speakCurrent()">🔊</button>
-      <div class="quiz-hint">點擊聽發音</div>
+      <div class="quiz-word-label" id="quizWordLabel">把下方注音代表的詞語寫在紙上</div>
+      <div class="quiz-bopomofo" id="quizQuestionText">ㄅㄆㄇㄈ</div>
+      <button class="quiz-play-btn" id="quizPlayBtn" onclick="speakCurrent()">🔊</button>
+      <div class="quiz-hint" id="quizHint">點擊聽發音</div>
       <div class="quiz-shoyo-quote" id="quizQuote"></div>
     </div>
     <div class="quiz-actions">
@@ -1018,6 +1060,7 @@ input, select, textarea { font-family: var(--font); }
           <tr>
             <th>詞彙</th>
             <th>注音</th>
+            <th>考法</th>
             <th>Pool</th>
             <th>答對 / 答錯</th>
             <th>操作</th>
@@ -1109,6 +1152,17 @@ input, select, textarea { font-family: var(--font); }
       <input type="text" id="modalBopomofo" placeholder="例：ㄅㄧㄢˋ ㄌㄨㄣˋ">
     </div>
     <div class="modal-field">
+      <label>考法</label>
+      <div class="quiz-mode-toggle" id="modalQuizModeToggle">
+        <button type="button" class="quiz-mode-option active" data-mode="bopomofo-to-word" onclick="selectQuizMode('bopomofo-to-word')">
+          🔊 看注音寫國字
+        </button>
+        <button type="button" class="quiz-mode-option" data-mode="word-to-bopomofo" onclick="selectQuizMode('word-to-bopomofo')">
+          📖 看國字寫注音
+        </button>
+      </div>
+    </div>
+    <div class="modal-field">
       <label>加入 Pool</label>
       <select id="modalPool">
         <option value="daily">每日特訓 (Daily)</option>
@@ -1188,13 +1242,22 @@ function verifyStorageWorks() {
 }
 
 function loadVocab() {
-  if (storageBroken) return memoryStore.vocab || [];
+  if (storageBroken) return normalizeVocab(memoryStore.vocab || []);
   try {
     const raw = localStorage.getItem(LS_VOCAB);
-    return raw ? JSON.parse(raw) : [];
+    return normalizeVocab(raw ? JSON.parse(raw) : []);
   } catch {
-    return memoryStore.vocab || [];
+    return normalizeVocab(memoryStore.vocab || []);
   }
+}
+
+// 舊資料沒有 quizMode 欄位時，補上預設值（注音→國字），確保向下相容
+function normalizeVocab(vocab) {
+  let changed = false;
+  vocab.forEach(w => {
+    if (!w.quizMode) { w.quizMode = 'bopomofo-to-word'; changed = true; }
+  });
+  return vocab;
 }
 
 function _saveVocab(d) {
@@ -1247,10 +1310,11 @@ function showStorageWarningBanner() {
   if (banner) banner.classList.add('show');
 }
 
-function createWord(word, bopomofo, pool = 'daily') {
+function createWord(word, bopomofo, pool = 'daily', quizMode = 'bopomofo-to-word') {
   return {
     id: Date.now() + Math.random(),
     word, bopomofo, pool,
+    quizMode, // 'bopomofo-to-word'：顯示注音寫國字 | 'word-to-bopomofo'：顯示國字寫注音
     correctStreak: 0,
     totalCorrect: 0,
     totalWrong: 0,
@@ -1357,7 +1421,19 @@ function renderQuestion() {
   const total = quizWords.length;
   document.getElementById('quizCounter').textContent = `${quizIdx + 1} / ${total}`;
   document.getElementById('quizProgressBar').style.width = `${(quizIdx / total) * 100}%`;
-  document.getElementById('quizBopomofo').textContent = w.bopomofo;
+
+  const isWordToBopomofo = w.quizMode === 'word-to-bopomofo';
+  document.getElementById('quizQuestionText').textContent = isWordToBopomofo ? w.word : w.bopomofo;
+  document.getElementById('quizWordLabel').textContent = isWordToBopomofo
+    ? '把下方詞語的注音寫在紙上'
+    : '把下方注音代表的詞語寫在紙上';
+
+  // 看國字寫注音模式下，隱藏語音按鈕避免朗讀洩漏注音答案
+  const playBtn = document.getElementById('quizPlayBtn');
+  const hint = document.getElementById('quizHint');
+  playBtn.style.display = isWordToBopomofo ? 'none' : '';
+  hint.style.display = isWordToBopomofo ? 'none' : '';
+
   document.getElementById('quizPoolTag').innerHTML =
     `<span class="pool-badge ${w.pool}">${POOL_LABEL[w.pool]}</span>`;
   document.getElementById('quizQuote').textContent = QUIZ_QUOTES_BY_POOL[w.pool] || '';
@@ -1374,6 +1450,7 @@ function nextQuestion() {
 function speakCurrent() {
   const w = quizWords[quizIdx];
   if (!w) return;
+  if (w.quizMode === 'word-to-bopomofo') return; // 防止此模式下朗讀洩漏注音答案
   const u = new SpeechSynthesisUtterance(w.word);
   u.lang = 'zh-TW'; u.rate = 0.9; u.pitch = 1; u.volume = 1;
   window.speechSynthesis.cancel();
@@ -1389,7 +1466,7 @@ function confirmExitQuiz() {
 // ==========================================
 function startGrading() {
   gradingResults = quizWords.map(w => ({
-    id: w.id, word: w.word, bopomofo: w.bopomofo, pool: w.pool, graded: null
+    id: w.id, word: w.word, bopomofo: w.bopomofo, pool: w.pool, quizMode: w.quizMode, graded: null
   }));
   renderGrading();
   showPage('grading');
@@ -1401,8 +1478,10 @@ function renderGrading() {
   gradingResults.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = `grading-item${item.graded === 'correct' ? ' correct' : item.graded === 'wrong' ? ' wrong' : ''}`;
+    const modeIcon = item.quizMode === 'word-to-bopomofo' ? '📖→🔤' : '🔤→📖';
     div.innerHTML = `
       <span class="pool-badge ${item.pool}">${POOL_LABEL[item.pool]}</span>
+      <span class="grading-mode-icon" title="${item.quizMode === 'word-to-bopomofo' ? '看國字寫注音' : '看注音寫國字'}">${modeIcon}</span>
       <span class="grading-item-word">${item.word}</span>
       <span class="grading-item-bopomofo">${item.bopomofo}</span>
       <div class="grading-item-actions">
@@ -1552,16 +1631,19 @@ function renderManager() {
 
   const tbody = document.getElementById('managerTableBody');
   if (!paged.length) {
-    tbody.innerHTML = `<tr><td colspan="5">
+    tbody.innerHTML = `<tr><td colspan="6">
       <div class="empty-state">
         <div class="empty-state-icon">🏐</div>
         <div class="empty-state-text">找不到詞彙，換個關鍵字試試</div>
       </div></td></tr>`;
   } else {
-    tbody.innerHTML = paged.map(w => `
+    tbody.innerHTML = paged.map(w => {
+      const isW2B = w.quizMode === 'word-to-bopomofo';
+      return `
       <tr>
         <td class="word-cell">${w.word}</td>
         <td>${w.bopomofo}</td>
+        <td><span class="quiz-mode-chip ${isW2B ? 'w2b' : 'b2w'}">${isW2B ? '📖→🔤 寫注音' : '🔤→📖 寫國字'}</span></td>
         <td><span class="pool-badge ${w.pool}">${POOL_LABEL[w.pool]}</span></td>
         <td>
           <span style="color:var(--success);font-weight:800">${w.totalCorrect||0}</span>
@@ -1574,7 +1656,8 @@ function renderManager() {
             <button class="btn btn-danger btn-sm"    onclick="deleteWord('${w.id}')">🗑</button>
           </div>
         </td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   }
 
   const pag = document.getElementById('managerPagination');
@@ -1586,12 +1669,22 @@ function renderManager() {
   `;
 }
 
+let editingQuizMode = 'bopomofo-to-word';
+
+function selectQuizMode(mode) {
+  editingQuizMode = mode;
+  document.querySelectorAll('#modalQuizModeToggle .quiz-mode-option').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+}
+
 function openAddModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = '新增詞彙';
   document.getElementById('modalWord').value = '';
   document.getElementById('modalBopomofo').value = '';
   document.getElementById('modalPool').value = 'daily';
+  selectQuizMode('bopomofo-to-word'); // 新增詞彙預設考法：看注音寫國字
   document.getElementById('addModal').classList.add('open');
 }
 function openEditModal(id) {
@@ -1603,6 +1696,7 @@ function openEditModal(id) {
   document.getElementById('modalWord').value = w.word;
   document.getElementById('modalBopomofo').value = w.bopomofo;
   document.getElementById('modalPool').value = w.pool;
+  selectQuizMode(w.quizMode || 'bopomofo-to-word');
   document.getElementById('addModal').classList.add('open');
 }
 function closeModal() {
@@ -1612,13 +1706,14 @@ function doSaveVocab() {
   const word      = document.getElementById('modalWord').value.trim();
   const bopomofo  = document.getElementById('modalBopomofo').value.trim();
   const pool      = document.getElementById('modalPool').value;
+  const quizMode  = editingQuizMode;
   if (!word || !bopomofo) { showToast('⚠️ 請填寫詞彙與注音'); return; }
   const vocab = loadVocab();
   if (editingId !== null) {
     const idx = vocab.findIndex(v => v.id === editingId);
-    if (idx !== -1) { vocab[idx].word = word; vocab[idx].bopomofo = bopomofo; vocab[idx].pool = pool; }
+    if (idx !== -1) { vocab[idx].word = word; vocab[idx].bopomofo = bopomofo; vocab[idx].pool = pool; vocab[idx].quizMode = quizMode; }
   } else {
-    vocab.push(createWord(word, bopomofo, pool));
+    vocab.push(createWord(word, bopomofo, pool, quizMode));
   }
   _saveVocab(vocab);
   closeModal();
@@ -1881,20 +1976,20 @@ document.getElementById('modalBopomofo').addEventListener('keydown', e => { if (
 function initSampleData() {
   if (loadVocab().length > 0) return;
   const samples = [
-    ['辯論','ㄅㄧㄢˋ ㄌㄨㄣˋ','daily'],
-    ['陶冶','ㄊㄠˊ ㄧㄝˇ','daily'],
-    ['璀璨','ㄘㄨㄟˇ ㄘㄢˋ','daily'],
-    ['矗立','ㄔㄨˋ ㄌㄧˋ','daily'],
-    ['斑駁','ㄅㄢ ㄅㄛˊ','daily'],
-    ['蒼茫','ㄘㄤ ㄇㄤˊ','daily'],
-    ['絢爛','ㄒㄩㄢˋ ㄌㄢˋ','daily'],
-    ['雋永','ㄐㄩㄢˋ ㄩㄥˇ','daily'],
-    ['韜光養晦','ㄊㄠ ㄍㄨㄤ ㄧㄤˇ ㄏㄨㄟˋ','daily'],
-    ['游刃有餘','ㄧㄡˊ ㄖㄣˋ ㄧㄡˇ ㄩˊ','daily'],
-    ['熙熙攘攘','ㄒㄧ ㄒㄧ ㄖㄤˇ ㄖㄤˇ','daily'],
-    ['振振有詞','ㄓㄣˋ ㄓㄣˋ ㄧㄡˇ ㄘˊ','daily'],
+    ['辯論','ㄅㄧㄢˋ ㄌㄨㄣˋ','daily','bopomofo-to-word'],
+    ['陶冶','ㄊㄠˊ ㄧㄝˇ','daily','bopomofo-to-word'],
+    ['璀璨','ㄘㄨㄟˇ ㄘㄢˋ','daily','word-to-bopomofo'],
+    ['矗立','ㄔㄨˋ ㄌㄧˋ','daily','bopomofo-to-word'],
+    ['斑駁','ㄅㄢ ㄅㄛˊ','daily','word-to-bopomofo'],
+    ['蒼茫','ㄘㄤ ㄇㄤˊ','daily','bopomofo-to-word'],
+    ['絢爛','ㄒㄩㄢˋ ㄌㄢˋ','daily','bopomofo-to-word'],
+    ['雋永','ㄐㄩㄢˋ ㄩㄥˇ','daily','word-to-bopomofo'],
+    ['韜光養晦','ㄊㄠ ㄍㄨㄤ ㄧㄤˇ ㄏㄨㄟˋ','daily','bopomofo-to-word'],
+    ['游刃有餘','ㄧㄡˊ ㄖㄣˋ ㄧㄡˇ ㄩˊ','daily','bopomofo-to-word'],
+    ['熙熙攘攘','ㄒㄧ ㄒㄧ ㄖㄤˇ ㄖㄤˇ','daily','bopomofo-to-word'],
+    ['振振有詞','ㄓㄣˋ ㄓㄣˋ ㄧㄡˇ ㄘˊ','daily','word-to-bopomofo'],
   ];
-  _saveVocab(samples.map(([w, b, p]) => createWord(w, b, p)));
+  _saveVocab(samples.map(([w, b, p, m]) => createWord(w, b, p, m)));
 }
 
 // ==========================================
